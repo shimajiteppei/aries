@@ -1,0 +1,10 @@
+[package]
+name = "nes_sdl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nes_core = { path = "../nes_core" }
+
+[dependencies.sdl2]
+version = "0.35"
