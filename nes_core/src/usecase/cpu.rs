@@ -721,13 +721,17 @@ impl NesState {
     #[cfg_attr(debug_assertions, inline(never))]
     fn br(&mut self, status_flag_getter: fn(&mut Self) -> bool, val: bool) {
         let addr = self.imm();
-        let imm = self.read_cpu(addr);
+        let imm = self.read_cpu(addr) as i8;
         if status_flag_getter(self) == val {
-            if self.cpu.cross_page_i8(self.cpu.register.PC, imm as i8) {
+            if self.cpu.cross_page_i8(self.cpu.register.PC, imm) {
                 self.tick();
             }
             self.tick();
-            self.cpu.register.PC += imm as u16;
+            if imm >= 0 {
+                self.cpu.register.PC += imm as u16;
+            } else {
+                self.cpu.register.PC -= (-imm) as u16;
+            }
         }
     }
 
@@ -832,6 +836,13 @@ impl NesState {
 
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
+    fn nop(&mut self, addr_fn: fn(&mut Self) -> u16) {
+        self.G(addr_fn);
+        self.tick();
+    }
+
+    #[cfg_attr(not(debug_assertions), inline(always))]
+    #[cfg_attr(debug_assertions, inline(never))]
     fn exec(&mut self) {
         let pc = self.cpu.register.PC;
         let val = self.read_cpu(pc);
@@ -839,19 +850,24 @@ impl NesState {
         match val {
             0x00 => self.INT(InterruptionType::BRK),
             0x01 => self.OR(Self::izx),
+            0x04 => self.nop(Self::zp),
             0x05 => self.OR(Self::zp),
             0x06 => self.ASL(Self::zp),
             0x08 => self.PHP(),
             0x09 => self.OR(Self::imm),
             0x0A => self.ASL_A(),
+            0x0C => self.nop(Self::abs),
             0x0D => self.OR(Self::abs),
             0x0E => self.ASL(Self::abs),
             0x10 => self.br(Self::get_P_N, false),
             0x11 => self.OR(Self::izy),
+            0x14 => self.nop(Self::zpx),
             0x15 => self.OR(Self::zpx),
             0x16 => self.ASL(Self::zpx),
             0x18 => self.flag(Self::set_P_C, false),
             0x19 => self.OR(Self::aby),
+            0x1A => self.NOP(),
+            0x1C => self.nop(Self::abx),
             0x1D => self.OR(Self::abx),
             0x1E => self.ASL(Self::_abx),
             0x20 => self.JSR(),
@@ -867,14 +883,18 @@ impl NesState {
             0x2E => self.ROL(Self::abs),
             0x30 => self.br(Self::get_P_N, true),
             0x31 => self.AND(Self::izy),
+            0x34 => self.nop(Self::zpx),
             0x35 => self.AND(Self::zpx),
             0x36 => self.ROL(Self::zpx),
             0x38 => self.flag(Self::set_P_C, true),
             0x39 => self.AND(Self::aby),
+            0x3A => self.NOP(),
+            0x3C => self.nop(Self::abx),
             0x3D => self.AND(Self::abx),
             0x3E => self.ROL(Self::_abx),
             0x40 => self.RTI(),
             0x41 => self.XOR(Self::izx),
+            0x44 => self.nop(Self::zp),
             0x45 => self.XOR(Self::zp),
             0x46 => self.LSR(Self::zp),
             0x48 => self.PHA(),
@@ -885,14 +905,18 @@ impl NesState {
             0x4E => self.LSR(Self::abs),
             0x50 => self.br(Self::get_P_V, false),
             0x51 => self.XOR(Self::izy),
+            0x54 => self.nop(Self::zpx),
             0x55 => self.XOR(Self::zpx),
             0x56 => self.LSR(Self::_abx),
             0x58 => self.flag(Self::set_P_I, false),
             0x59 => self.XOR(Self::aby),
+            0x5A => self.NOP(),
+            0x5C => self.nop(Self::abx),
             0x5D => self.XOR(Self::abx),
             0x5E => self.LSR(Self::_abx),
             0x60 => self.RTS(),
             0x61 => self.ADC(Self::izx),
+            0x64 => self.nop(Self::zp),
             0x65 => self.ADC(Self::zp),
             0x66 => self.ROR(Self::zp),
             0x68 => self.PLA(),
@@ -903,17 +927,23 @@ impl NesState {
             0x6E => self.ROR(Self::abs),
             0x70 => self.br(Self::get_P_V, true),
             0x71 => self.ADC(Self::izy),
+            0x74 => self.nop(Self::zpx),
             0x75 => self.ADC(Self::zpx),
             0x76 => self.ROR(Self::zpx),
             0x78 => self.flag(Self::set_P_I, true),
             0x79 => self.ADC(Self::aby),
+            0x7A => self.NOP(),
+            0x7C => self.nop(Self::abx),
             0x7D => self.ADC(Self::abx),
             0x7E => self.ROR(Self::_abx),
+            0x80 => self.nop(Self::imm),
             0x81 => self.st(Self::get_A, Self::izx),
+            0x82 => self.nop(Self::imm),
             0x84 => self.st(Self::get_Y, Self::zp),
             0x85 => self.st(Self::get_A, Self::zp),
             0x86 => self.st(Self::get_X, Self::zp),
             0x88 => self.dec(Self::get_Y, Self::set_Y),
+            0x89 => self.nop(Self::imm),
             0x8A => self.tr(Self::get_X, Self::set_A),
             0x8C => self.st(Self::get_Y, Self::abs),
             0x8D => self.st(Self::get_A, Self::abs),
@@ -952,6 +982,7 @@ impl NesState {
             0xBE => self.ld(Self::aby, Self::set_X),
             0xC0 => self.cmp(Self::imm, Self::get_Y),
             0xC1 => self.cmp(Self::izx, Self::get_A),
+            0xC2 => self.nop(Self::imm),
             0xC4 => self.cmp(Self::zp, Self::get_Y),
             0xC5 => self.cmp(Self::zp, Self::get_A),
             0xC6 => self.DEC(Self::zp),
@@ -963,14 +994,18 @@ impl NesState {
             0xCE => self.DEC(Self::abs),
             0xD0 => self.br(Self::get_P_Z, false),
             0xD1 => self.cmp(Self::izy, Self::get_A),
+            0xD4 => self.nop(Self::zpx),
             0xD5 => self.cmp(Self::zpx, Self::get_A),
             0xD6 => self.DEC(Self::zpx),
             0xD8 => self.flag(Self::set_P_D, false),
             0xD9 => self.cmp(Self::aby, Self::get_A),
+            0xDA => self.NOP(),
+            0xDC => self.nop(Self::abx),
             0xDD => self.cmp(Self::abx, Self::get_A),
             0xDE => self.DEC(Self::_abx),
             0xE0 => self.cmp(Self::imm, Self::get_X),
             0xE1 => self.SBC(Self::izx),
+            0xE2 => self.nop(Self::imm),
             0xE4 => self.cmp(Self::zp, Self::get_X),
             0xE5 => self.SBC(Self::zp),
             0xE6 => self.INC(Self::zp),
@@ -982,10 +1017,13 @@ impl NesState {
             0xEE => self.INC(Self::abs),
             0xF0 => self.br(Self::get_P_Z, true),
             0xF1 => self.SBC(Self::izy),
+            0xF4 => self.nop(Self::zpx),
             0xF5 => self.SBC(Self::zpx),
             0xF6 => self.INC(Self::zpx),
             0xF8 => self.flag(Self::set_P_D, true),
             0xF9 => self.SBC(Self::aby),
+            0xFA => self.NOP(),
+            0xFC => self.nop(Self::abx),
             0xFD => self.SBC(Self::abx),
             0xFE => self.INC(Self::_abx),
             _ => panic!("{:?}", (val, &self.cpu.register)),
