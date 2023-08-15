@@ -60,7 +60,7 @@ impl StatusRegister {
     pub fn get_u8(&self) -> u8 {
         (self.N.as_u8() << 7)
             | (self.V.as_u8() << 6)
-            | (self.R.as_u8() << 5)
+            | (1 << 5)
             | (self.B.as_u8() << 4)
             | (self.D.as_u8() << 3)
             | (self.I.as_u8() << 2)
@@ -73,7 +73,7 @@ impl StatusRegister {
     pub fn set_u8(&mut self, value: u8) {
         self.N = value.bit_flag(7);
         self.V = value.bit_flag(6);
-        self.R = value.bit_flag(5);
+        self.R = true;
         self.B = value.bit_flag(4);
         self.D = value.bit_flag(3);
         self.I = value.bit_flag(2);

@@ -52,13 +52,13 @@ impl CpuState {
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     pub fn cross_page(&mut self, addr: u16, delta: u8) -> bool {
-        ((addr + delta as u16) & 0xFF00) != (addr & 0xFF00)
+        (addr.wrapping_add(delta as u16) & 0xFF00) != (addr & 0xFF00)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     pub fn cross_page_i8(&mut self, addr: u16, delta: i8) -> bool {
-        ((addr as i32 + delta as i32) & 0xFF00) as u16 != (addr & 0xFF00)
+        ((addr as i32).wrapping_add(delta as i32) & 0xFF00) as u16 != (addr & 0xFF00)
     }
 }
 
@@ -195,7 +195,7 @@ impl NesState {
         if self.cpu.cross_page(addr, self.cpu.register.X) {
             self.tick();
         }
-        addr + self.cpu.register.X as u16
+        addr.wrapping_add(self.cpu.register.X as u16)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
@@ -205,7 +205,7 @@ impl NesState {
         if self.cpu.cross_page(addr, self.cpu.register.Y) {
             self.tick();
         }
-        addr + self.cpu.register.Y as u16
+        addr.wrapping_add(self.cpu.register.Y as u16)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
@@ -240,17 +240,18 @@ impl NesState {
     #[cfg_attr(debug_assertions, inline(never))]
     fn _izy(&mut self) -> u16 {
         let addr = self.zp();
-        self.read16_little_endian(addr, (addr + 1) & 0xFF) + self.cpu.register.Y as u16
+        self.read16_little_endian(addr, (addr + 1) & 0xFF)
+            .wrapping_add(self.cpu.register.Y as u16)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     fn izy(&mut self) -> u16 {
         let addr = self._izy();
-        if self
-            .cpu
-            .cross_page(addr - self.cpu.register.Y as u16, self.cpu.register.Y)
-        {
+        if self.cpu.cross_page(
+            addr.wrapping_sub(self.cpu.register.Y as u16),
+            self.cpu.register.Y,
+        ) {
             self.tick();
         }
         addr
@@ -467,7 +468,7 @@ impl NesState {
     fn cmp(&mut self, addr_fn: fn(&mut Self) -> u16, register_getter: fn(&mut Self) -> u8) {
         let (_, val) = self.G(addr_fn);
         let reg = register_getter(self);
-        self.cpu.update_NZ(reg - val);
+        self.cpu.update_NZ(reg.wrapping_sub(val));
         self.cpu.register.P.C = reg >= val;
     }
 
@@ -514,7 +515,7 @@ impl NesState {
     fn AND(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A &= val;
-        self.cpu.update_NZ(val);
+        self.cpu.update_NZ(self.cpu.register.A);
     }
 
     #[allow(non_snake_case)]
@@ -523,7 +524,7 @@ impl NesState {
     fn XOR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A ^= val;
-        self.cpu.update_NZ(val);
+        self.cpu.update_NZ(self.cpu.register.A);
     }
 
     #[allow(non_snake_case)]
@@ -532,7 +533,7 @@ impl NesState {
     fn OR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A |= val;
-        self.cpu.update_NZ(val);
+        self.cpu.update_NZ(self.cpu.register.A);
     }
 
     #[allow(non_snake_case)]
@@ -587,7 +588,7 @@ impl NesState {
     fn DEC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.tick();
-        let res = self.write_cpu(addr, val - 1);
+        let res = self.write_cpu(addr, val.wrapping_sub(1));
         self.cpu.update_NZ(res);
     }
 
@@ -597,14 +598,14 @@ impl NesState {
     fn INC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.tick();
-        let res = self.write_cpu(addr, val + 1);
+        let res = self.write_cpu(addr, val.wrapping_add(1));
         self.cpu.update_NZ(res);
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     fn dec(&mut self, register_getter: fn(&mut Self) -> u8, register_setter: fn(&mut Self, u8)) {
-        let res = register_getter(self) - 1;
+        let res = register_getter(self).wrapping_sub(1);
         register_setter(self, res);
         self.cpu.update_NZ(res);
         self.tick();
@@ -613,7 +614,7 @@ impl NesState {
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     fn inc(&mut self, register_getter: fn(&mut Self) -> u8, register_setter: fn(&mut Self, u8)) {
-        let res = register_getter(self) + 1;
+        let res = register_getter(self).wrapping_add(1);
         register_setter(self, res);
         self.cpu.update_NZ(res);
         self.tick();
@@ -685,7 +686,7 @@ impl NesState {
         self.tick();
         self.tick();
         let val = self.pop();
-        self.cpu.register.P.set_u8(val);
+        self.cpu.register.P.set_u8(val & 0b1110_1111);
     }
 
     #[allow(non_snake_case)]
@@ -693,7 +694,7 @@ impl NesState {
     #[cfg_attr(debug_assertions, inline(never))]
     fn PHP(&mut self) {
         self.tick();
-        let val = self.cpu.register.P.get_u8() | 0x10;
+        let val = self.cpu.register.P.get_u8() | 0b0011_0000;
         self.push(val);
     }
 
@@ -705,7 +706,7 @@ impl NesState {
         self.tick();
         let val = self.pop();
         self.cpu.register.A = val;
-        self.cpu.register.P.set_u8(val);
+        self.cpu.update_NZ(self.cpu.register.A);
     }
 
     #[allow(non_snake_case)]
@@ -720,17 +721,13 @@ impl NesState {
     #[cfg_attr(debug_assertions, inline(never))]
     fn br(&mut self, status_flag_getter: fn(&mut Self) -> bool, val: bool) {
         let addr = self.imm();
-        let imm = self.read_cpu(addr) as i8;
+        let imm = self.read_cpu(addr);
         if status_flag_getter(self) == val {
-            if self.cpu.cross_page_i8(self.cpu.register.PC, imm) {
+            if self.cpu.cross_page_i8(self.cpu.register.PC, imm as i8) {
                 self.tick();
             }
             self.tick();
-            if imm >= 0 {
-                self.cpu.register.PC += imm as u16;
-            } else {
-                self.cpu.register.PC -= (-imm) as u16;
-            }
+            self.cpu.register.PC += imm as u16;
         }
     }
 
@@ -962,8 +959,8 @@ impl NesState {
             0xC9 => self.cmp(Self::imm, Self::get_A),
             0xCA => self.dec(Self::get_X, Self::set_X),
             0xCC => self.cmp(Self::abs, Self::get_Y),
-            0xCD => self.cmp(Self::zp, Self::get_A),
-            0xCE => self.DEC(Self::zp),
+            0xCD => self.cmp(Self::abs, Self::get_A),
+            0xCE => self.DEC(Self::abs),
             0xD0 => self.br(Self::get_P_Z, false),
             0xD1 => self.cmp(Self::izy, Self::get_A),
             0xD5 => self.cmp(Self::zpx, Self::get_A),
@@ -972,7 +969,7 @@ impl NesState {
             0xD9 => self.cmp(Self::aby, Self::get_A),
             0xDD => self.cmp(Self::abx, Self::get_A),
             0xDE => self.DEC(Self::_abx),
-            0xE0 => self.cmp(Self::imm, Self::get_A),
+            0xE0 => self.cmp(Self::imm, Self::get_X),
             0xE1 => self.SBC(Self::izx),
             0xE4 => self.cmp(Self::zp, Self::get_X),
             0xE5 => self.SBC(Self::zp),
@@ -996,7 +993,7 @@ impl NesState {
     }
 
     pub fn power(&mut self) {
-        self.cpu.register.P.B = true;
+        // self.cpu.register.P.B = true;
         self.INT(InterruptionType::RESET);
     }
 
