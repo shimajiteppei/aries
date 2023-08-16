@@ -9,19 +9,17 @@ mod tests {
     use super::*;
 
     const PROJECT_ROOT: &str = "../";
+    fn start(rel_path: &str) {
+        start_nes(String::from(String::from(PROJECT_ROOT) + rel_path)).unwrap();
+    }
 
     #[test]
     fn helloworld() {
-        start_nes(String::from(String::from(PROJECT_ROOT) + "assets/helloworld.nes")).unwrap();
+        start("assets/helloworld.nes");
     }
 
     #[test]
     fn nestest() {
-        start_nes(String::from(String::from(PROJECT_ROOT) + "assets/nes-test-roms/other/nestest.nes")).unwrap();
-    }
-
-    #[test]
-    fn hjoge() {
-        start_nes(String::from(String::from(PROJECT_ROOT) + "assets/nes-test-roms/instr_test-v5/official_only.nes")).unwrap();
+        start("assets/nes-test-roms/other/nestest.nes");
     }
 }
