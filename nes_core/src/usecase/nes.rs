@@ -1,10 +1,11 @@
 use crate::{adapter::nes::NesAdapter, entity::cartridge::Cartridge};
 
-use super::{cpu::CpuState, joypad::JoyPadState, ppu_state::PpuState};
+use super::{apu::ApuState, cpu::CpuState, joypad::JoyPadState, ppu_state::PpuState};
 
 pub struct NesState {
     pub cpu: CpuState,
     pub ppu: PpuState,
+    pub apu: ApuState,
     pub cartridge: Cartridge,
     pub joypad: JoyPadState,
     pub adapter: NesAdapter,
@@ -16,6 +17,7 @@ impl NesState {
         Self {
             cpu: CpuState::default(),
             ppu: PpuState::new(cartridge.vertical_mirroring),
+            apu: ApuState::default(),
             cartridge,
             joypad: JoyPadState::default(),
             adapter,

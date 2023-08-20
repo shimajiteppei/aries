@@ -272,7 +272,7 @@ impl NesState {
             }
             4 => {
                 self.ppu.oam.primary[self.ppu.register.OAM_ADDR as usize] = value;
-                self.ppu.register.OAM_ADDR += 1;
+                self.ppu.register.OAM_ADDR = self.ppu.register.OAM_ADDR.wrapping_add(1);
             }
             5 => {
                 if !self.ppu.bus_latch.strobe {
@@ -384,7 +384,7 @@ impl NesState {
                     if self.ppu.oam.imaginary[i].id == 64 {
                         continue;
                     }
-                    let mut spr_x: u8 = (x as u8) - self.ppu.oam.imaginary[i].x;
+                    let mut spr_x: u8 = (x as u8).wrapping_sub(self.ppu.oam.imaginary[i].x);
                     if spr_x >= 8 {
                         continue;
                     }

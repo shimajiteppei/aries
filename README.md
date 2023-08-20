@@ -26,13 +26,7 @@ git clone --recursive https://github.com/tomoesaturn/aries.git
 # git clone https://github.com/tomoesaturn/aries.git
 # git submodule update --init --recursive
 
-cargo build --workspace
-```
-
-Run:
-
-```
-cargo run --bin nes_sdl
+cargo build --release
 ```
 
 ### WASM

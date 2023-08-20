@@ -1,8 +1,7 @@
 use std::{fs::File, io::Read};
 
 use nes_core::adapter::{
-    audio::AudioAdapter, cartridge::CartridgeAdapter, joypad::JoyPadAdapter, nes::NesAdapter,
-    video::VideoAdapter,
+    audio::AudioAdapter, cartridge::CartridgeAdapter, nes::NesAdapter, video::VideoAdapter,
 };
 
 pub struct CartridgeCtx {
@@ -35,14 +34,6 @@ impl VideoAdapter for VideoCtx {
 pub struct AudioCtx;
 impl AudioAdapter for AudioCtx {}
 
-#[derive(Default)]
-pub struct JoyPadCtx;
-impl JoyPadAdapter for JoyPadCtx {
-    fn get_state(&self, _is_player2: bool) -> u8 {
-        0
-    }
-}
-
 #[test]
 fn nestest() {
     let nes = NesAdapter {
@@ -51,7 +42,6 @@ fn nestest() {
         )),
         video: Box::new(VideoCtx::default()),
         audio: Box::new(AudioCtx::default()),
-        joypad: Box::new(JoyPadCtx::default()),
     };
     let mut nes_state = nes.init();
 

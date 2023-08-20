@@ -69,7 +69,7 @@ impl NesState {
         match addr {
             0x0000..=0x1FFF => self.cpu.wram[(addr % 0x800) as usize],
             0x2000..=0x3FFF => self.read_ppu(addr),
-            0x4000..=0x4013 | 0x4015 => 0xFF,
+            0x4000..=0x4013 | 0x4015 => self.read_apu(addr),
             0x4017 => self.read_joypad_state(true),
             0x4014 => 0,
             0x4016 => self.read_joypad_state(false),
@@ -86,8 +86,7 @@ impl NesState {
                 value
             }
             0x2000..=0x3FFF => self.write_ppu(addr, value),
-            0x4000..=0x4013 | 0x4015 => 0xFF,
-            0x4017 => todo!(),
+            0x4000..=0x4013 | 0x4015 | 0x4017 => self.write_apu(addr, value),
             0x4014 => {
                 self.dma_oam(value);
                 0
