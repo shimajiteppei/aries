@@ -6,6 +6,7 @@ use super::{cartridge::Cartridge, ppu::VerticalMirroring};
 /// "NES<EOF>"
 pub const INES_MAGIC_NUMBER: [u8; 4] = [0x4eu8, 0x45u8, 0x53u8, 0x1au8];
 
+#[derive(Debug)]
 pub struct NesFileHeader {
     prg_rom_size_in_16kbyte_units: u8,
     chr_rom_size_in_8kbyte_units: u8,
@@ -14,12 +15,14 @@ pub struct NesFileHeader {
     flags7: Flags7,
 }
 
+#[derive(Debug)]
 struct Flags6 {
     vertical_mirroing: VerticalMirroring,
     has_trainer: bool,
     mapper_low_4bit: u8,
 }
 
+#[derive(Debug)]
 struct Flags7 {
     mapper_high_4bit: u8,
 }
@@ -45,6 +48,7 @@ impl NesFileHeader {
 
     pub fn new_cartridge(file: Vec<u8>) -> Cartridge {
         let header = NesFileHeader::read_header(&file);
+        // println!("{:?}", header);
         let mapper_number = (header.flags7.mapper_high_4bit << 4) | header.flags6.mapper_low_4bit;
 
         // slice into each segments

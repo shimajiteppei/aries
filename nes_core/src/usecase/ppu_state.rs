@@ -21,7 +21,7 @@ pub struct PpuState {
 impl PpuState {
     pub fn new(vertical_mirroring: bool) -> Self {
         Self {
-            vram: [0xFF; 0x800],
+            vram: [0; 0x800],
             palette_ram: [0; 0x20],
             vertical_mirroring,
             oam: OamState {

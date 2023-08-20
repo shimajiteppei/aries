@@ -19,7 +19,7 @@ impl Default for CpuState {
     fn default() -> Self {
         Self {
             register: Register::default(),
-            wram: [0xFF; 0x800],
+            wram: [0; 0x800],
             control: Control::default(),
             remaining_cycles: 0,
         }
@@ -508,7 +508,7 @@ impl NesState {
     #[cfg_attr(debug_assertions, inline(never))]
     fn SBC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
-        self._ADC(val ^ 0xFF);
+        self._ADC(!val);
     }
 
     #[allow(non_snake_case)]
@@ -740,9 +740,9 @@ impl NesState {
             }
             self.tick();
             if imm >= 0 {
-                self.cpu.register.PC += imm as u16;
+                self.cpu.register.PC = self.cpu.register.PC.wrapping_add(imm as u16);
             } else {
-                self.cpu.register.PC -= (-imm) as u16;
+                self.cpu.register.PC = self.cpu.register.PC.wrapping_sub(imm.wrapping_neg() as u16);
             }
         }
     }
@@ -953,7 +953,7 @@ impl NesState {
         self.tick();
         self.write_cpu(addr, res);
         self.cpu.update_NZ(res);
-        let res = res ^ 0xFF;
+        let res = !res;
         let res_a = self.cpu.register.A as i16 + res as i16 + self.cpu.register.P.C as i16;
         self.cpu.register.A = res_a as u8;
         self.cpu.update_CV(self.cpu.register.A, res, res_a);
@@ -1214,7 +1214,7 @@ impl NesState {
     }
 
     pub fn power(&mut self) {
-        // self.cpu.register.P.B = true;
+        self.cpu.register.P.B = true;
         self.INT(InterruptionType::RESET);
     }
 

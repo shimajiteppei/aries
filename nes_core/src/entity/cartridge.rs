@@ -31,6 +31,9 @@ impl Cartridge {
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_prg(&self, addr: u16) -> u8 {
+        if addr < 0x8000 {
+            return 0;
+        }
         self.prg_rom[self.prg_map[(addr as usize - 0x8000) / 0x2000] as usize
             + (addr as usize - 0x8000) % 0x2000]
     }

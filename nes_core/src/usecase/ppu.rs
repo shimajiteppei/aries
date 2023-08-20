@@ -101,8 +101,7 @@ impl PpuState {
     pub fn h_update(&mut self) {
         if self.is_rendering() {
             self.loopy.v_addr.set_u16(
-                (self.loopy.v_addr.get_u16() & !0x041F_u16)
-                    | (self.loopy.t_addr.get_u16() & 0x041F),
+                (self.loopy.v_addr.get_u16() & !0x041F) | (self.loopy.t_addr.get_u16() & 0x041F),
             )
         }
     }
@@ -112,8 +111,7 @@ impl PpuState {
     pub fn v_update(&mut self) {
         if self.is_rendering() {
             self.loopy.v_addr.set_u16(
-                (self.loopy.v_addr.get_u16() & !0x7BE0_u16)
-                    | (self.loopy.t_addr.get_u16() & 0x7BE0),
+                (self.loopy.v_addr.get_u16() & !0x7BE0) | (self.loopy.t_addr.get_u16() & 0x7BE0),
             )
         }
     }
@@ -225,7 +223,7 @@ impl NesState {
         match addr % 8 {
             2 => {
                 self.ppu.bus_latch.result =
-                    (self.ppu.bus_latch.result & 0b1_1111) | self.ppu.register.PPU_STATUS.get_u8();
+                    (self.ppu.bus_latch.result & 0x1F) | self.ppu.register.PPU_STATUS.get_u8();
                 self.ppu.register.PPU_STATUS.vblank = false;
                 self.ppu.bus_latch.strobe = false;
             }
@@ -276,17 +274,17 @@ impl NesState {
             }
             5 => {
                 if !self.ppu.bus_latch.strobe {
-                    self.ppu.loopy.f_x = value & 0b111;
+                    self.ppu.loopy.f_x = value & 7;
                     self.ppu.loopy.t_addr.c_x = value >> 3;
                 } else {
-                    self.ppu.loopy.t_addr.f_y = value & 0b111;
+                    self.ppu.loopy.t_addr.f_y = value & 7;
                     self.ppu.loopy.t_addr.c_y = value >> 3;
                 }
                 self.ppu.bus_latch.strobe = !self.ppu.bus_latch.strobe;
             }
             6 => {
                 if !self.ppu.bus_latch.strobe {
-                    self.ppu.loopy.t_addr.set_high(value & 0b11_1111);
+                    self.ppu.loopy.t_addr.set_high(value & 0x3F);
                 } else {
                     self.ppu.loopy.t_addr.set_low(value);
                     self.ppu
@@ -301,7 +299,7 @@ impl NesState {
                 self.ppu.loopy.v_addr.set_addr(
                     self.ppu.loopy.v_addr.get_addr()
                         + if self.ppu.register.PPU_CTRL.incr {
-                            0b10_0000
+                            32
                         } else {
                             1
                         },
@@ -320,15 +318,17 @@ impl NesState {
             self.ppu.oam.imaginary[i] = self.ppu.oam.secondary[i].clone();
             if self.ppu.spr_height() == 16 {
                 addr = (self.ppu.oam.imaginary[i].tile as u16 & 1) * 0x1000
-                    + (self.ppu.oam.imaginary[i].tile as u16 & !1_u16) * 16;
+                    + (self.ppu.oam.imaginary[i].tile as u16 & !1) * 16;
             } else {
                 addr = self.ppu.register.PPU_CTRL.spr_tbl.as_u16() * 0x1000
                     + self.ppu.oam.imaginary[i].tile as u16 * 16;
             }
 
-            let mut spr_y = (self.ppu.spr_height()
-                + self.ppu.frame.scanline % self.ppu.spr_height()
-                - (self.ppu.oam.imaginary[i].y as u16) % self.ppu.spr_height())
+            let mut spr_y = self
+                .ppu
+                .frame
+                .scanline
+                .wrapping_sub(self.ppu.oam.imaginary[i].y as u16)
                 % self.ppu.spr_height();
             if (self.ppu.oam.imaginary[i].attr & 0x80).as_bool() {
                 spr_y ^= self.ppu.spr_height() - 1;
@@ -440,8 +440,7 @@ impl NesState {
                 self.cpu.control.NMI = true;
             }
         } else if mode == ScanlineMode::POST && self.ppu.frame.dot == 0 {
-            let pixels = self.ppu.pixels;
-            self.adapter.video.draw_frame(pixels);
+            self.adapter.video.draw_frame(self.ppu.pixels);
         } else if mode == ScanlineMode::VISIBLE || mode == ScanlineMode::PRE {
             match self.ppu.frame.dot {
                 1 => {
