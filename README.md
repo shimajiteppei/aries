@@ -4,36 +4,14 @@ WORK IN PROGRESS!!
 
 Rust implementation of cycle-accurate NES emulator.
 
-## Building and Running
-
-### SDL2
-
-Install the dependencies for Rust-SDL2( https://github.com/Rust-SDL2/rust-sdl2 ):
-
 ```sh
-# Ubuntu
-sudo apt install libsdl2-dev
-
-# Arch Linux
-sudo pacman -S sdl2
-
-# MacOS
-brew install sdl2
-```
-
-Build:
-
-```
 git clone --recursive https://github.com/tomoesaturn/aries.git
-# git clone https://github.com/tomoesaturn/aries.git
-# git submodule update --init --recursive
-
-cargo build --release
 ```
 
-### WASM
+## Build
 
-TODO
+- [Desktop App](./nes_sdl/README.md)
+- [Web App](./nes_yew/README.md)
 
 ## Supported Mappers
 
@@ -43,11 +21,12 @@ TODO
 ## Passed Tests
 
 - [x] [Hello, World!](http://hp.vector.co.jp/authors/VA042397/nes/sample/helloworld.zip), from NES kennkyushitsu (Japanese) http://hp.vector.co.jp/authors/VA042397/nes/index.html
+- [ ] scanline
 - [ ] nestest
 
-## References and credits
+## References
 
-- Mainly referred C++ implementation: https://github.com/AndreaOrru/LaiNES
+- Originally referred C++ implementation: https://github.com/AndreaOrru/LaiNES
 - Awesome implemantations
   - https://github.com/koute/pinky
   - https://github.com/lukexor/tetanes

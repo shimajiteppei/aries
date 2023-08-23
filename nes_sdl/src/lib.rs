@@ -24,109 +24,72 @@ pub fn start_nes(file_path: String) -> Result<(), String> {
 
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => {
+                Event::Quit { .. } => {
                     break 'window_loop;
                 }
                 Event::KeyDown {
-                    keycode: Some(Keycode::Z),
+                    keycode: Some(code),
                     ..
-                } => {
-                    nes_state.joypad.state_1p.A = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::X),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.B = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::A),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.SELECT = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::S),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.START = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Up),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.UP = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Down),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.DOWN = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Left),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.LEFT = true;
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::Right),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.RIGHT = true;
-                }
+                } => match code {
+                    Keycode::Escape => {
+                        break 'window_loop;
+                    }
+                    Keycode::Z => {
+                        nes_state.joypad.state_1p.A = true;
+                    }
+                    Keycode::X => {
+                        nes_state.joypad.state_1p.B = true;
+                    }
+                    Keycode::A => {
+                        nes_state.joypad.state_1p.SELECT = true;
+                    }
+                    Keycode::S => {
+                        nes_state.joypad.state_1p.START = true;
+                    }
+                    Keycode::Right => {
+                        nes_state.joypad.state_1p.RIGHT = true;
+                    }
+                    Keycode::Left => {
+                        nes_state.joypad.state_1p.LEFT = true;
+                    }
+                    Keycode::Down => {
+                        nes_state.joypad.state_1p.DOWN = true;
+                    }
+                    Keycode::Up => {
+                        nes_state.joypad.state_1p.UP = true;
+                    }
+                    _ => {}
+                },
                 Event::KeyUp {
-                    keycode: Some(Keycode::Z),
+                    keycode: Some(code),
                     ..
-                } => {
-                    nes_state.joypad.state_1p.A = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::X),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.B = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::A),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.SELECT = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::S),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.START = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Up),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.UP = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Down),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.DOWN = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Left),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.LEFT = false;
-                }
-                Event::KeyUp {
-                    keycode: Some(Keycode::Right),
-                    ..
-                } => {
-                    nes_state.joypad.state_1p.RIGHT = false;
-                }
+                } => match code {
+                    Keycode::Z => {
+                        nes_state.joypad.state_1p.A = false;
+                    }
+                    Keycode::X => {
+                        nes_state.joypad.state_1p.B = false;
+                    }
+                    Keycode::A => {
+                        nes_state.joypad.state_1p.SELECT = false;
+                    }
+                    Keycode::S => {
+                        nes_state.joypad.state_1p.START = false;
+                    }
+                    Keycode::Right => {
+                        nes_state.joypad.state_1p.RIGHT = false;
+                    }
+                    Keycode::Left => {
+                        nes_state.joypad.state_1p.LEFT = false;
+                    }
+                    Keycode::Down => {
+                        nes_state.joypad.state_1p.DOWN = false;
+                    }
+                    Keycode::Up => {
+                        nes_state.joypad.state_1p.UP = false;
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }

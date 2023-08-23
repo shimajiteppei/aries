@@ -5,6 +5,4 @@ edition = "2021"
 
 [dependencies]
 nes_core = { path = "../nes_core" }
-
-[dependencies.sdl2]
-version = "0.35"
+sdl2 = "0.35"
