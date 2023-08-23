@@ -29,7 +29,7 @@ fn App(nes_props: &NesProps) -> Html {
                 <NesComponent ..nes_props />
             </div>
             <p style="display:flex;justify-content:center">
-                { "S: START / A: SELECT / Z: A / X: B / 方向ボタン: 十字キー" }
+                { "S: START / A: SELECT / Z: B / X: A / 方向ボタン: 十字キー" }
             </p>
         </div>
     }
@@ -122,10 +122,10 @@ impl Component for NesComponent {
                     match code {
                         // Escape
                         27 => self.stop_frame_loop(),
-                        // Z
-                        90 => nes_state.joypad.state_1p.A = true,
                         // X
-                        88 => nes_state.joypad.state_1p.B = true,
+                        88 => nes_state.joypad.state_1p.A = true,
+                        // Z
+                        90 => nes_state.joypad.state_1p.B = true,
                         // A
                         65 => nes_state.joypad.state_1p.SELECT = true,
                         // S
@@ -143,10 +143,10 @@ impl Component for NesComponent {
                 }
                 NesMessage::KeyUp(code) => {
                     match code {
-                        // Z
-                        90 => nes_state.joypad.state_1p.A = false,
                         // X
-                        88 => nes_state.joypad.state_1p.B = false,
+                        88 => nes_state.joypad.state_1p.A = false,
+                        // Z
+                        90 => nes_state.joypad.state_1p.B = false,
                         // A
                         65 => nes_state.joypad.state_1p.SELECT = false,
                         // S

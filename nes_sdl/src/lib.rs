@@ -31,63 +31,29 @@ pub fn start_nes(file_path: String) -> Result<(), String> {
                     keycode: Some(code),
                     ..
                 } => match code {
-                    Keycode::Escape => {
-                        break 'window_loop;
-                    }
-                    Keycode::Z => {
-                        nes_state.joypad.state_1p.A = true;
-                    }
-                    Keycode::X => {
-                        nes_state.joypad.state_1p.B = true;
-                    }
-                    Keycode::A => {
-                        nes_state.joypad.state_1p.SELECT = true;
-                    }
-                    Keycode::S => {
-                        nes_state.joypad.state_1p.START = true;
-                    }
-                    Keycode::Right => {
-                        nes_state.joypad.state_1p.RIGHT = true;
-                    }
-                    Keycode::Left => {
-                        nes_state.joypad.state_1p.LEFT = true;
-                    }
-                    Keycode::Down => {
-                        nes_state.joypad.state_1p.DOWN = true;
-                    }
-                    Keycode::Up => {
-                        nes_state.joypad.state_1p.UP = true;
-                    }
+                    Keycode::Escape => break 'window_loop,
+                    Keycode::X => nes_state.joypad.state_1p.A = true,
+                    Keycode::Z => nes_state.joypad.state_1p.B = true,
+                    Keycode::A => nes_state.joypad.state_1p.SELECT = true,
+                    Keycode::S => nes_state.joypad.state_1p.START = true,
+                    Keycode::Right => nes_state.joypad.state_1p.RIGHT = true,
+                    Keycode::Left => nes_state.joypad.state_1p.LEFT = true,
+                    Keycode::Down => nes_state.joypad.state_1p.DOWN = true,
+                    Keycode::Up => nes_state.joypad.state_1p.UP = true,
                     _ => {}
                 },
                 Event::KeyUp {
                     keycode: Some(code),
                     ..
                 } => match code {
-                    Keycode::Z => {
-                        nes_state.joypad.state_1p.A = false;
-                    }
-                    Keycode::X => {
-                        nes_state.joypad.state_1p.B = false;
-                    }
-                    Keycode::A => {
-                        nes_state.joypad.state_1p.SELECT = false;
-                    }
-                    Keycode::S => {
-                        nes_state.joypad.state_1p.START = false;
-                    }
-                    Keycode::Right => {
-                        nes_state.joypad.state_1p.RIGHT = false;
-                    }
-                    Keycode::Left => {
-                        nes_state.joypad.state_1p.LEFT = false;
-                    }
-                    Keycode::Down => {
-                        nes_state.joypad.state_1p.DOWN = false;
-                    }
-                    Keycode::Up => {
-                        nes_state.joypad.state_1p.UP = false;
-                    }
+                    Keycode::X => nes_state.joypad.state_1p.A = false,
+                    Keycode::Z => nes_state.joypad.state_1p.B = false,
+                    Keycode::A => nes_state.joypad.state_1p.SELECT = false,
+                    Keycode::S => nes_state.joypad.state_1p.START = false,
+                    Keycode::Right => nes_state.joypad.state_1p.RIGHT = false,
+                    Keycode::Left => nes_state.joypad.state_1p.LEFT = false,
+                    Keycode::Down => nes_state.joypad.state_1p.DOWN = false,
+                    Keycode::Up => nes_state.joypad.state_1p.UP = false,
                     _ => {}
                 },
                 _ => {}
