@@ -48,6 +48,25 @@ fn nestest() {
     // ../assets/nes-test-roms/other/nestest.log
     nes_state.cpu.register.PC = 0xC000;
     loop {
-        nes_state.run_frame();
+        println!(
+            "PC:{:04X} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} S:{:02X}",
+            nes_state.cpu.register.PC,
+            nes_state.cpu.register.A,
+            nes_state.cpu.register.X,
+            nes_state.cpu.register.Y,
+            nes_state.cpu.register.P.get_u8(),
+            nes_state.cpu.register.S
+        );
+
+        if nes_state.cpu.register.PC == 0xC66E
+            && nes_state.cpu.register.A == 0x00
+            && nes_state.cpu.register.X == 0xFF
+            && nes_state.cpu.register.Y == 0x15
+            && nes_state.cpu.register.P.get_u8() == 0x27
+            && nes_state.cpu.register.S == 0xFD
+        {
+            break;
+        }
+        nes_state.exec();
     }
 }

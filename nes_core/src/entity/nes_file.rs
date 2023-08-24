@@ -48,7 +48,6 @@ impl NesFileHeader {
 
     pub fn new_cartridge(file: Vec<u8>) -> Cartridge {
         let header = NesFileHeader::read_header(&file);
-        // println!("{:?}", header);
         let mapper_number = (header.flags7.mapper_high_4bit << 4) | header.flags6.mapper_low_4bit;
 
         // slice into each segments

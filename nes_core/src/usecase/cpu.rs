@@ -962,20 +962,10 @@ impl NesState {
 
     #[cfg_attr(not(debug_assertions), inline(always))]
     #[cfg_attr(debug_assertions, inline(never))]
-    fn exec(&mut self) {
+    pub fn exec(&mut self) {
         let pc = self.cpu.register.PC;
         let val = self.read_cpu(pc);
         self.cpu.register.PC += 1;
-        // println!(
-        //     "PC:{:04X} OP:{:02X} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} S:{:02X}",
-        //     pc,
-        //     val,
-        //     self.cpu.register.A,
-        //     self.cpu.register.X,
-        //     self.cpu.register.Y,
-        //     self.cpu.register.P.get_u8(),
-        //     self.cpu.register.S
-        // );
         match val {
             0x00 => self.INT(InterruptionType::BRK),
             0x01 => self.OR(Self::izx),
