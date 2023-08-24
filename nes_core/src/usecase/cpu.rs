@@ -28,14 +28,12 @@ impl Default for CpuState {
 
 impl CpuState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_irq(&mut self) {
         self.control.IRQ = true;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn update_CV(&mut self, x: u8, y: u8, res: i16) {
         self.register.P.C = res > 0xFF;
         self.register.P.V = (!(x ^ y) & (x as i16 ^ res) as u8 & 0x80).as_bool();
@@ -43,20 +41,17 @@ impl CpuState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn update_NZ(&mut self, res: u8) {
         self.register.P.N = (res & 0x80).as_bool();
         self.register.P.Z = !res.as_bool()
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn cross_page(&mut self, addr: u16, delta: u8) -> bool {
         (addr.wrapping_add(delta as u16) & 0xFF00) != (addr & 0xFF00)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn cross_page_i8(&mut self, addr: u16, delta: i8) -> bool {
         ((addr as i32).wrapping_add(delta as i32) & 0xFF00) as u16 != (addr & 0xFF00)
     }
@@ -64,7 +59,6 @@ impl CpuState {
 
 impl NesState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn read_cpu_bus(&mut self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x1FFF => self.cpu.wram[(addr % 0x800) as usize],
@@ -78,7 +72,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn write_cpu_bus(&mut self, addr: u16, value: u8) -> u8 {
         match addr {
             0x0000..=0x1FFF => {
@@ -107,33 +100,28 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn read_cpu(&mut self, addr: u16) -> u8 {
         self.tick();
         self.read_cpu_bus(addr)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn write_cpu(&mut self, addr: u16, value: u8) -> u8 {
         self.tick();
         self.write_cpu_bus(addr, value)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn read16_little_endian(&mut self, addr1: u16, addr2: u16) -> u16 {
         get_little_endian(self.read_cpu(addr1), self.read_cpu(addr2))
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn read16(&mut self, addr: u16) -> u16 {
         self.read16_little_endian(addr, addr + 1)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn push(&mut self, val: u8) -> u8 {
         let value = self.write_cpu(0x100 + self.cpu.register.S as u16, val);
         self.cpu.register.S -= 1;
@@ -141,14 +129,12 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn pop(&mut self) -> u8 {
         self.cpu.register.S += 1;
         self.read_cpu(0x100 + self.cpu.register.S as u16)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn dma_oam(&mut self, bank: u8) {
         for i in 0..256 {
             let value = self.read_cpu((bank as u16) * 0x100 + (i as u16));
@@ -158,7 +144,6 @@ impl NesState {
 
     /// Addressing Modes
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn imm(&mut self) -> u16 {
         let pc = self.cpu.register.PC;
         self.cpu.register.PC += 1;
@@ -166,7 +151,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn imm16(&mut self) -> u16 {
         let pc = self.cpu.register.PC;
         self.cpu.register.PC += 2;
@@ -174,21 +158,18 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn abs(&mut self) -> u16 {
         let addr = self.imm16();
         self.read16(addr)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn _abx(&mut self) -> u16 {
         self.tick();
         self.abs() + self.cpu.register.X as u16
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn abx(&mut self) -> u16 {
         let addr = self.abs();
         if self.cpu.cross_page(addr, self.cpu.register.X) {
@@ -198,7 +179,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn aby(&mut self) -> u16 {
         let addr = self.abs();
         if self.cpu.cross_page(addr, self.cpu.register.Y) {
@@ -208,35 +188,30 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn zp(&mut self) -> u16 {
         let addr = self.imm();
         self.read_cpu(addr) as u16
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn zpx(&mut self) -> u16 {
         self.tick();
         (self.zp() + self.cpu.register.X as u16) & 0xFF
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn zpy(&mut self) -> u16 {
         self.tick();
         (self.zp() + self.cpu.register.Y as u16) & 0xFF
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn izx(&mut self) -> u16 {
         let addr = self.zpx();
         self.read16_little_endian(addr, (addr + 1) & 0xFF)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn _izy(&mut self) -> u16 {
         let addr = self.zp();
         self.read16_little_endian(addr, (addr + 1) & 0xFF)
@@ -244,7 +219,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn izy(&mut self) -> u16 {
         let addr = self._izy();
         if self.cpu.cross_page(
@@ -257,7 +231,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn st(&mut self, val_fn: fn(&mut Self) -> u8, addr_mode_fn: fn(&mut Self) -> u16) {
         let addr = addr_mode_fn(self);
         let val = val_fn(self);
@@ -266,7 +239,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn st_A_izy(&mut self) {
         self.tick();
         let addr = self._izy();
@@ -275,7 +247,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn st_A_abx(&mut self) {
         self.tick();
         let addr = self.abs() + self.cpu.register.X as u16;
@@ -284,7 +255,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn st_A_aby(&mut self) {
         self.tick();
         let addr = self.abs() + self.cpu.register.Y as u16;
@@ -293,7 +263,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn G(&mut self, addr_fn: fn(&mut Self) -> u16) -> (u16, u8) {
         let addr = addr_fn(self);
         let val = self.read_cpu(addr);
@@ -302,167 +271,143 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_A(&mut self) -> u8 {
         self.cpu.register.A
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_A(&mut self, val: u8) {
         self.cpu.register.A = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_X(&mut self) -> u8 {
         self.cpu.register.X
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_AX(&mut self) -> u8 {
         self.cpu.register.A & self.cpu.register.X
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_X(&mut self, val: u8) {
         self.cpu.register.X = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_Y(&mut self) -> u8 {
         self.cpu.register.Y
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_Y(&mut self, val: u8) {
         self.cpu.register.Y = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_S(&mut self) -> u8 {
         self.cpu.register.S
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_S(&mut self, val: u8) {
         self.cpu.register.S = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_N(&mut self) -> bool {
         self.cpu.register.P.N
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_N(&mut self, val: bool) {
         self.cpu.register.P.N = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_V(&mut self) -> bool {
         self.cpu.register.P.V
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_V(&mut self, val: bool) {
         self.cpu.register.P.V = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_B(&mut self) -> bool {
         self.cpu.register.P.B
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_B(&mut self, val: bool) {
         self.cpu.register.P.B = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_D(&mut self) -> bool {
         self.cpu.register.P.D
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_D(&mut self, val: bool) {
         self.cpu.register.P.D = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_I(&mut self) -> bool {
         self.cpu.register.P.I
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_I(&mut self, val: bool) {
         self.cpu.register.P.I = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_Z(&mut self) -> bool {
         self.cpu.register.P.Z
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_Z(&mut self, val: bool) {
         self.cpu.register.P.Z = val;
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_P_C(&mut self) -> bool {
         self.cpu.register.P.C
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_P_C(&mut self, val: bool) {
         self.cpu.register.P.C = val;
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ld(&mut self, addr_fn: fn(&mut Self) -> u16, register_setter: fn(&mut Self, u8)) {
         let (_, val) = self.G(addr_fn);
         register_setter(self, val);
@@ -470,7 +415,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn _cmp(&mut self, val: u8, register_getter: fn(&mut Self) -> u8) {
         let reg = register_getter(self);
         self.cpu.update_NZ(reg.wrapping_sub(val));
@@ -478,7 +422,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn cmp(&mut self, addr_fn: fn(&mut Self) -> u16, register_getter: fn(&mut Self) -> u8) {
         let (_, val) = self.G(addr_fn);
         self._cmp(val, register_getter);
@@ -486,7 +429,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn _ADC(&mut self, val: u8) {
         let res = self.cpu.register.A as i16 + val as i16 + self.cpu.register.P.C as i16;
         self.cpu.update_CV(self.cpu.register.A, val, res);
@@ -497,7 +439,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ADC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self._ADC(val);
@@ -505,7 +446,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn SBC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self._ADC(!val);
@@ -513,7 +453,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn BIT(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.P.Z = !(self.cpu.register.A & val).as_bool();
@@ -523,7 +462,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn AND(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A &= val;
@@ -532,7 +470,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn XOR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A ^= val;
@@ -541,7 +478,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn OR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.cpu.register.A |= val;
@@ -550,7 +486,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ASL(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.cpu.register.P.C = (val & 0x80).as_bool();
@@ -561,7 +496,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn LSR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.cpu.register.P.C = (val & 0x01).as_bool();
@@ -572,7 +506,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ROL(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         let c = self.cpu.register.P.C.as_u8();
@@ -584,7 +517,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ROR(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         let c = self.cpu.register.P.C.as_u8() << 7;
@@ -596,7 +528,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn DEC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.tick();
@@ -606,7 +537,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn INC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (addr, val) = self.G(addr_fn);
         self.tick();
@@ -615,7 +545,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn dec(&mut self, register_getter: fn(&mut Self) -> u8, register_setter: fn(&mut Self, u8)) {
         let res = register_getter(self).wrapping_sub(1);
         register_setter(self, res);
@@ -624,7 +553,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn inc(&mut self, register_getter: fn(&mut Self) -> u8, register_setter: fn(&mut Self, u8)) {
         let res = register_getter(self).wrapping_add(1);
         register_setter(self, res);
@@ -634,7 +562,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ASL_A(&mut self) {
         self.cpu.register.P.C = (self.cpu.register.A & 0x80).as_bool();
         self.cpu.register.A <<= 1;
@@ -644,7 +571,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn LSR_A(&mut self) {
         self.cpu.register.P.C = (self.cpu.register.A & 0x01).as_bool();
         self.cpu.register.A >>= 1;
@@ -654,7 +580,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ROL_A(&mut self) {
         let c = self.cpu.register.P.C.as_u8();
         self.cpu.register.P.C = (self.cpu.register.A & 0x80).as_bool();
@@ -665,7 +590,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ROR_A(&mut self) {
         let c = self.cpu.register.P.C.as_u8() << 7;
         self.cpu.register.P.C = (self.cpu.register.A & 0x01).as_bool();
@@ -675,7 +599,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn tr(&mut self, register_getter: fn(&mut Self) -> u8, register_setter: fn(&mut Self, u8)) {
         let res = register_getter(self);
         register_setter(self, res);
@@ -685,7 +608,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn tr_X_S(&mut self) {
         self.cpu.register.S = self.cpu.register.X;
         self.tick();
@@ -693,7 +615,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn PLP(&mut self) {
         self.tick();
         self.tick();
@@ -703,7 +624,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn PHP(&mut self) {
         self.tick();
         let val = self.cpu.register.P.get_u8() | 0b0011_0000;
@@ -712,7 +632,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn PLA(&mut self) {
         self.tick();
         self.tick();
@@ -723,14 +642,12 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn PHA(&mut self) {
         self.tick();
         self.push(self.cpu.register.A);
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn br(&mut self, status_flag_getter: fn(&mut Self) -> bool, val: bool) {
         let addr = self.imm();
         let imm = self.read_cpu(addr) as i8;
@@ -749,7 +666,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn JMP_IND(&mut self) {
         let addr = self.imm16();
         let imm = self.read16(addr);
@@ -758,7 +674,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn JMP(&mut self) {
         let addr = self.imm16();
         let imm = self.read16(addr);
@@ -767,7 +682,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn JSR(&mut self) {
         let pc = self.cpu.register.PC + 1;
         self.push((pc >> 8) as u8);
@@ -779,7 +693,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn RTS(&mut self) {
         self.tick();
         self.tick();
@@ -791,7 +704,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn RTI(&mut self) {
         self.PLP();
         let addr_l = self.pop() as u16;
@@ -800,7 +712,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn flag(&mut self, status_flag_setter: fn(&mut Self, bool), val: bool) {
         status_flag_setter(self, val);
         self.tick();
@@ -808,7 +719,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn INT(&mut self, t: InterruptionType) {
         self.tick();
         if t != InterruptionType::BRK {
@@ -841,13 +751,11 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn NOP(&mut self) {
         self.tick();
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn nop(&mut self, addr_fn: fn(&mut Self) -> u16) {
         self.G(addr_fn);
         self.tick();
@@ -855,7 +763,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn SLO(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // ASL + OR
         let (addr, val) = self.G(addr_fn);
@@ -869,7 +776,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn RLA(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // ROL + AND
         let (addr, val) = self.G(addr_fn);
@@ -884,7 +790,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn SRE(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // LSR + OR
         let (addr, val) = self.G(addr_fn);
@@ -898,7 +803,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn RRA(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // ROR + ADC
         let (addr, val) = self.G(addr_fn);
@@ -915,14 +819,12 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn SAX(&mut self, addr_fn: fn(&mut Self) -> u16) {
         self.st(Self::get_AX, addr_fn);
     }
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn LAX(&mut self, addr_fn: fn(&mut Self) -> u16) {
         let (_, val) = self.G(addr_fn);
         self.set_A(val);
@@ -932,7 +834,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn DCP(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // DEC + CMP
         let (addr, val) = self.G(addr_fn);
@@ -945,7 +846,6 @@ impl NesState {
 
     #[allow(non_snake_case)]
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn ISC(&mut self, addr_fn: fn(&mut Self) -> u16) {
         // INC + SBC
         let (addr, val) = self.G(addr_fn);
@@ -961,7 +861,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn exec(&mut self) {
         let pc = self.cpu.register.PC;
         let val = self.read_cpu(pc);

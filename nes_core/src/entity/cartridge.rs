@@ -29,7 +29,6 @@ impl Cartridge {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_prg(&self, addr: u16) -> u8 {
         if addr < 0x8000 {
             return 0;
@@ -39,19 +38,16 @@ impl Cartridge {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_chr(&self, addr: u16) -> u8 {
         self.chr_rom[self.chr_map[addr as usize / 0x400] as usize + (addr as usize) % 0x400]
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn write_prg(&self, _: u16, value: u8) -> u8 {
         value
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn write_chr(&self, _: u16, value: u8) -> u8 {
         value
     }
