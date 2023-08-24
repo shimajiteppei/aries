@@ -9,7 +9,6 @@ pub struct ApuState {
 
 impl NesState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_apu(&self, addr: u16) -> u8 {
         match addr {
             0x4000..=0x4003 => self.apu.register.pulse1[(addr - 0x4000) as usize],
@@ -24,7 +23,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn write_apu(&mut self, addr: u16, val: u8) -> u8 {
         match addr {
             0x4000..=0x4003 => {

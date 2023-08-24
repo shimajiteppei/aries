@@ -56,7 +56,6 @@ impl Default for StatusRegister {
 
 impl StatusRegister {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_u8(&self) -> u8 {
         (self.N.as_u8() << 7)
             | (self.V.as_u8() << 6)
@@ -69,7 +68,6 @@ impl StatusRegister {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_u8(&mut self, value: u8) {
         self.N = value.bit_flag(7);
         self.V = value.bit_flag(6);

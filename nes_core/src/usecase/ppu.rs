@@ -10,7 +10,6 @@ use super::{
 
 impl PpuState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn nt_mirror(&self, addr: u16) -> u16 {
         if self.vertical_mirroring {
             addr % 0x800
@@ -20,13 +19,11 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn is_rendering(&self) -> bool {
         self.register.PPU_MASK.bg || self.register.PPU_MASK.spr
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn spr_height(&self) -> u16 {
         if self.register.PPU_CTRL.spr_sz {
             16
@@ -36,13 +33,11 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn nt_addr(&self) -> u16 {
         0x2000 | (self.loopy.v_addr.get_u16() & 0xFFF)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn at_addr(&self) -> u16 {
         0x23C0
             | ((self.loopy.v_addr.nt as u16) << 10)
@@ -51,7 +46,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn bg_addr(&self) -> u16 {
         (self.background_shift_register.nt as u16) * 16
             + self.loopy.v_addr.f_y as u16
@@ -59,7 +53,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn h_scroll(&mut self) {
         if self.is_rendering() {
             if self.loopy.v_addr.c_x == 31 {
@@ -73,7 +66,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn v_scroll(&mut self) {
         if self.is_rendering() {
             if self.loopy.v_addr.f_y < 7 {
@@ -97,7 +89,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn h_update(&mut self) {
         if self.is_rendering() {
             self.loopy.v_addr.set_u16(
@@ -107,7 +98,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn v_update(&mut self) {
         if self.is_rendering() {
             self.loopy.v_addr.set_u16(
@@ -117,7 +107,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn reload_shift(&mut self) {
         self.background_shift_register.bg_shift_l = (self.background_shift_register.bg_shift_l
             & 0xFF00)
@@ -132,7 +121,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn clear_oam(&mut self) {
         for i in 0..8 {
             self.oam.secondary[i].y = 0xFF;
@@ -146,7 +134,6 @@ impl PpuState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn eval_sprites(&mut self) {
         let mut n = 0;
         for i in 0..64 {
@@ -173,7 +160,6 @@ impl PpuState {
 
 impl NesState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn read_ppu_bus(&self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x1FFF => self.cartridge.read_chr(addr),
@@ -196,7 +182,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn write_ppu_bus(&mut self, addr: u16, value: u8) {
         match addr {
             0x0000..=0x1FFF => {
@@ -218,7 +203,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_ppu(&mut self, addr: u16) -> u8 {
         match addr % 8 {
             2 => {
@@ -254,7 +238,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn write_ppu(&mut self, addr: u16, value: u8) -> u8 {
         self.ppu.bus_latch.result = value;
         match addr % 8 {
@@ -311,7 +294,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn load_sprites(&mut self) {
         let mut addr: u16;
         for i in 0..8 {
@@ -341,7 +323,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn pixel(&mut self) {
         let mut palette: u8 = 0;
         let mut obj_palette: u8 = 0;
@@ -432,7 +413,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     fn scanline_cycle(&mut self, mode: ScanlineMode) {
         if mode == ScanlineMode::NMI && self.ppu.frame.dot == 1 {
             self.ppu.register.PPU_STATUS.vblank = true;

@@ -63,7 +63,6 @@ pub struct PpuCtrl {
 
 impl PpuCtrl {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_u8(&mut self, value: u8) {
         self.nmi = value.bit_flag(7);
         self.slave = value.bit_flag(6);
@@ -95,7 +94,6 @@ pub struct PpuMask {
 
 impl PpuMask {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_u8(&mut self, value: u8) {
         self.gray = value.bit_flag(7);
         self.bg_left = value.bit_flag(6);
@@ -122,7 +120,6 @@ pub struct PpuStatus {
 
 impl PpuStatus {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_u8(&self) -> u8 {
         (self.vblank.as_u8() << 7)
             | (self.spr_hit.as_u8() << 6)
@@ -131,7 +128,6 @@ impl PpuStatus {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_u8(&mut self, value: u8) {
         self.vblank = value.bit_flag(7);
         self.spr_hit = value.bit_flag(6);

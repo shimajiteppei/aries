@@ -12,7 +12,6 @@ pub struct JoyPadState {
 
 impl NesState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn read_joypad_state(&mut self, is_player2: bool) -> u8 {
         if self.joypad.strobe {
             return 0x40 | (self.get_joypad_state(is_player2) & 1);
@@ -25,7 +24,6 @@ impl NesState {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn write_joypad_strobe(&mut self, val: bool) {
         if self.joypad.strobe && !val {
             self.joypad.shift_register[0] = self.get_joypad_state(false);

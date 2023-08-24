@@ -15,7 +15,6 @@ pub struct JoyPadBtnState {
 
 impl JoyPadBtnState {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_u8(&self) -> u8 {
         (self.RIGHT.as_u8() << 7)
             | (self.LEFT.as_u8() << 6)

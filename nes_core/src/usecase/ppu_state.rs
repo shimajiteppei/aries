@@ -104,7 +104,6 @@ pub struct LoopyAddr {
 
 impl LoopyAddr {
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_u16(&self) -> u16 {
         ((self.f_y as u16) << 12)
             | ((self.nt as u16) << 10)
@@ -113,7 +112,6 @@ impl LoopyAddr {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_u16(&mut self, value: u16) {
         self.f_y = value.partial_bit(12..15) as u8;
         self.nt = value.partial_bit(10..12) as u8;
@@ -122,19 +120,16 @@ impl LoopyAddr {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn get_addr(&self) -> u16 {
         self.get_u16() & 0b11_1111_1111_1111
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_addr(&mut self, value: u16) {
         self.set_u16((self.f_y as u16 & 0b100) << 12 | value & 0b11_1111_1111_1111)
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_high(&mut self, value: u8) {
         self.f_y = value.partial_bit(4..7);
         self.nt = value.partial_bit(2..4);
@@ -142,7 +137,6 @@ impl LoopyAddr {
     }
 
     #[cfg_attr(not(debug_assertions), inline(always))]
-    #[cfg_attr(debug_assertions, inline(never))]
     pub fn set_low(&mut self, value: u8) {
         self.c_y = (self.c_y & 0b11000) | value.partial_bit(5..8);
         self.c_x = value.partial_bit(0..5);
