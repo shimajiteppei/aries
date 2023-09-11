@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <canvas id="canvas" width="256" height="240" style="height: 90vh"></canvas>
+    <script type="module">
+      import init, { start_nes } from "./pkg/nes_wasm.js";
+      try {
+        await init();
+        const res = await fetch("../assets/helloworld.nes");
+        const buf = await res.arrayBuffer();
+        start_nes("canvas", new Uint8Array(buf));
+      } catch {}
+    </script>
+  </body>
+</html>
