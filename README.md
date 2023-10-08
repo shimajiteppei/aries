@@ -11,7 +11,7 @@ git clone --recursive https://github.com/tomoesaturn/aries.git
 ## Build
 
 - [Desktop App](./nes_sdl/README.md)
-- [Web App](./nes_yew/README.md)
+- [Web App](./nes_wasm/README.md)
 
 ## Supported Mappers
 

@@ -1,4 +1,4 @@
-# nes_yew
+# nes_wasm
 
 ## Build
 
